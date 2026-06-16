@@ -1,2 +1,3 @@
 # BANKING-APPLICATION
-Secure Bank is a modern and secure banking application developed using HTML, CSS, Thymeleaf, Spring Boot, JPA, and MySQL. The system provides digital banking services through Customer, Staff, and Manager dashboards. It includes advanced security features such as OTP-based authentication, role-based access control, face recognition attendance 
+Secure Bank is a modern and secure banking application developed using HTML, CSS, Thymeleaf, Spring Boot, JPA, and MySQL. The system provides digital banking services through Customer, Staff, and Manager dashboards. It includes advanced security features such as OTP-based authentication, role-based access control, face recognition attendance, KYC verification, and secure transaction management. The application aims to simplify banking operations while ensuring security, transparency, and efficiency for all users.
+
