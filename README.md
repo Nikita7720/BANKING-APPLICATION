@@ -147,10 +147,10 @@ http://localhost:8080
 ![Customer Dashboard](customer_dashboard.png)
 
 ### Staff Dashboard
-![Staff Dashboard](staff_dashboard.png)
+![Staff Dashboard](staff_dashbaord.png)
 
 ### Manager Dashboard
-![Manager Dashboard](Manager_dashboard.png)
+![Manager Dashboard](manager_dashboard.png)
 
 ---
 
