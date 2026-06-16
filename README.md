@@ -141,7 +141,7 @@ http://localhost:8080
 ## 📸 Screenshots
 
 ### Home Page
-![Home](index.png)
+![Home](index_page.png)
 
 ### Customer Dashboard
 ![Customer Dashboard](screenshots/customer-dashboard.png)
