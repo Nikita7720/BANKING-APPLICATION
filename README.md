@@ -169,7 +169,7 @@ http://localhost:8080
 
 **Nikita Ishwar Prajapati**
 
-B.Tech Computer Engineering
+MCA
 
 Java Full Stack Developer
 
