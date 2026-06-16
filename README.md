@@ -144,13 +144,13 @@ http://localhost:8080
 ![Home](index_page.png)
 
 ### Customer Dashboard
-![Customer Dashboard](screenshots/customer_dashboard.png)
+![Customer Dashboard](customer_dashboard.png)
 
 ### Staff Dashboard
-![Staff Dashboard](screenshots/staff_dashboard.png)
+![Staff Dashboard](staff_dashboard.png)
 
 ### Manager Dashboard
-![Manager Dashboard](screenshots/Manager_dashboard.png)
+![Manager Dashboard](Manager_dashboard.png)
 
 ---
 
