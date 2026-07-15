@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Active Customers | SecureBank Staff</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>* { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen pb-20">
+
+  <div class="bg-indigo-800 text-white pb-24 pt-10 px-4">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div>
+        <a href="/staff-dashboard" class="text-indigo-300 hover:text-white transition flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-arrow-left"></i> Staff Dashboard
+        </a>
+        <h1 class="text-3xl font-extrabold tracking-tight">Customer Directory</h1>
+        <p class="text-indigo-200 mt-1">List of all active bank account holders</p>
+      </div>
+      <div class="bg-white/10 p-4 rounded-3xl backdrop-blur-md border border-white/10">
+        <i class="fa-solid fa-users text-5xl"></i>
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 -mt-12">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
+      
+      <div class="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+        <h3 class="text-xl font-bold text-gray-800">Verified Account Holders</h3>
+        <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-4 py-1.5 rounded-full" th:text="${customers.size() + ' Active Members'}"></span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 bg-gray-50/50">
+              <th class="px-8 py-5">Customer Name</th>
+              <th class="px-6 py-5">Account No</th>
+              <th class="px-6 py-5">Account Type</th>
+              <th class="px-6 py-5">KYC Status</th>
+              <th class="px-6 py-5">Balance</th>
+              <th class="px-8 py-5 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr th:each="c : ${customers}" class="hover:bg-gray-50/80 transition group">
+              <td class="px-8 py-5">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-sm" th:text="${#strings.substring(c.fullname,0,1)}"></div>
+                  <div>
+                    <p class="font-bold text-gray-800 text-sm" th:text="${c.fullname}">-</p>
+                    <p class="text-[10px] text-gray-400" th:text="${c.email}">-</p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-5">
+                <p class="font-mono text-xs font-bold text-indigo-600" th:text="${c.accountNumber}">-</p>
+                <p class="text-[10px] text-gray-400" th:text="'IFSC: ' + ${c.ifscCode}">-</p>
+              </td>
+              <td class="px-6 py-5">
+                <span class="text-xs font-medium text-gray-600" th:text="${c.account_type}">-</span>
+              </td>
+              <td class="px-6 py-5">
+                <span th:if="${c.kycStatus == 'Verified'}" class="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded uppercase">Verified</span>
+                <span th:if="${c.kycStatus != 'Verified'}" class="bg-red-50 text-red-400 text-[9px] font-black px-2 py-0.5 rounded uppercase">Incomplete</span>
+              </td>
+              <td class="px-6 py-5">
+                <p class="font-bold text-gray-800 text-sm" th:text="'₹' + ${c.balance}">₹0.00</p>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <button class="bg-gray-100 text-gray-400 p-2 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div th:if="${customers.isEmpty()}" class="py-24 text-center">
+        <i class="fa-solid fa-user-slash text-gray-100 text-6xl mb-4"></i>
+        <p class="text-gray-400 font-bold">No active customers found</p>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

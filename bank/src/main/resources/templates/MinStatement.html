@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Transaction History</title>
+</head>
+
+<body>
+
+<h2>Transaction History for Account: <span th:text="${accNo}"></span></h2>
+<p th:text="'Transactions count: ' + ${transactions.size()}"></p>
+
+<table border="1">
+
+<thead>
+    <tr>
+        <th>ID</th>
+        <th>Account Number</th>
+        <th>Date</th>
+        <th>Type</th>
+        <th>Amount</th>
+    </tr>
+</thead>
+    <tbody>
+        <tr th:if="${#lists.isEmpty(transactions)}"><td colspan="5" style="text-align:center;">No transactions found.</td></tr>
+        <tr th:each="t, stat : ${transactions}">
+            <td th:text="${transactions.size() - stat.index}"></td>
+            <td th:text="${t.accountNumber}"></td>
+            <td th:text="${t.dateTime}"></td>
+            <td th:text="${t.type}"></td>
+            <td th:text="${t.amount}"></td>
+        </tr>
+    </tbody>
+</table>
+
+<a th:href="@{'/statement/' + ${accNo}}">
+<button>Download</button>
+</a>
+
+</body>
+</html>

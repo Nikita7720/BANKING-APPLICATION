@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaction Statement | SecureBank</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen pb-20">
+
+  <!-- Header -->
+  <div class="bg-indigo-700 text-white pb-16 pt-8 px-4">
+    <div class="max-w-5xl mx-auto flex justify-between items-end">
+      <div>
+        <a href="/customer-dashboard" class="text-indigo-200 hover:text-white transition flex items-center gap-2 mb-4">
+          <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <h1 class="text-4xl font-extrabold tracking-tight">Mini Statement</h1>
+        <p class="text-indigo-100 mt-2">Recent transactions for Account: <span class="font-mono font-bold" th:text="${accNo}">-</span></p>
+      </div>
+      <div class="hidden md:block">
+        <a th:href="@{'/statement/' + ${accNo}}" class="bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-3 rounded-2xl font-bold transition flex items-center gap-2 backdrop-blur-md">
+          <i class="fa-solid fa-file-pdf"></i> Download PDF
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="max-w-5xl mx-auto px-4 -mt-12">
+    <div class="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden">
+      
+      <!-- Summary Bar -->
+      <div class="bg-gray-50/50 border-b border-gray-100 p-6 flex flex-wrap justify-between items-center gap-4">
+        <h3 class="text-lg font-bold text-gray-800">Transaction History</h3>
+        <div class="flex gap-2">
+          <span class="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-3 py-1 rounded-full border border-emerald-100">ALL ACTIVITY</span>
+          <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full border border-gray-200 uppercase" th:text="${transactions != null ? transactions.size() + ' Records' : '0 Records'}"></span>
+        </div>
+      </div>
+
+      <!-- Table Section -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
+              <th class="px-8 py-5">#</th>
+              <th class="px-6 py-5">Date & Time</th>
+              <th class="px-6 py-5">Description</th>
+              <th class="px-6 py-5">Type</th>
+              <th class="px-8 py-5 text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr th:each="t, stat : ${transactions}" class="hover:bg-gray-50/50 transition group">
+              <td class="px-8 py-5">
+                <span class="text-xs font-bold text-gray-300" th:text="${transactions.size() - stat.index}">1</span>
+              </td>
+              <td class="px-6 py-5">
+                <p class="text-sm font-bold text-gray-700" th:text="${#strings.substring(t.dateTime,0,10)}">Date</p>
+                <p class="text-[10px] text-gray-400" th:text="${#strings.substring(t.dateTime,11,16)}">Time</p>
+              </td>
+              <td class="px-6 py-5">
+                <p class="text-sm text-gray-600 font-medium" th:text="${t.type == 'DEPOSIT' ? 'Cash Deposit' : (t.type == 'WITHDRAW' ? 'Cash Withdrawal' : 'Transfer to ' + t.accountNumber)}">Transfer</p>
+                <p class="text-[10px] text-gray-400 font-mono" th:text="${t.accountNumber}">Acc No</p>
+              </td>
+              <td class="px-6 py-5">
+                <span th:if="${t.type == 'DEPOSIT'}" class="bg-emerald-100 text-emerald-700 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tighter">Credit</span>
+                <span th:if="${t.type != 'DEPOSIT'}" class="bg-red-100 text-red-700 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-tighter">Debit</span>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <span th:class="${t.type == 'DEPOSIT' ? 'text-emerald-600 font-extrabold text-lg' : 'text-gray-800 font-extrabold text-lg'}"
+                      th:text="${t.type == 'DEPOSIT' ? '+ ₹' + t.amount : '- ₹' + t.amount}">₹ 0.00</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <div th:if="${transactions == null or transactions.isEmpty()}" class="py-24 text-center">
+        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-200 text-3xl">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+        <h4 class="text-gray-400 font-bold">No transactions found</h4>
+        <p class="text-gray-300 text-sm">Your activity will appear here.</p>
+      </div>
+    </div>
+
+    <!-- Mobile Download Button -->
+    <div class="mt-8 md:hidden">
+      <a th:href="@{'/statement/' + ${accNo}}" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2">
+        <i class="fa-solid fa-file-pdf"></i> Download Statement
+      </a>
+    </div>
+  </main>
+
+</body>
+</html>

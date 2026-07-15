@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manager Login - SecureBank</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-purple-900 to-indigo-950 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    
+    <!-- Header -->
+    <div class="bg-purple-700 text-white p-8 text-center">
+      <h1 class="text-3xl font-bold flex items-center justify-center gap-3">
+        <i class="fa-solid fa-user-tie"></i> Manager Portal
+      </h1>
+      <p class="text-purple-200 mt-2">Secure Administrative Access</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="p-8">
+      <div th:if="${error}" class="bg-red-100 text-red-700 p-3 rounded mb-4 text-center" th:text="${error}"></div>
+      
+      <form action="/manager-login" method="post" class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email / Employee ID</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" name="email" 
+                   class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+                   placeholder="Enter Email or ID" required>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="password" name="password" 
+                   class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-purple-600"
+                   placeholder="Enter Password" required>
+          </div>
+        </div>
+
+        <button type="submit"
+                class="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-4 rounded-lg transition duration-300">
+          Login
+        </button>
+      </form>
+      <div class="mt-6 text-center text-sm space-y-3">
+        <p class="text-gray-600">New Administrator? <a href="/manager-register" class="text-purple-600 font-bold hover:underline">Register here</a></p>
+        <a href="/" class="text-purple-600 hover:underline block"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

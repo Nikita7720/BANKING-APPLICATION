@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>SecureBank - Customer Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 min-h-screen flex items-center justify-center p-4 font-sans">
+    <div class="relative bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl w-full max-w-md p-8 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-bold text-white tracking-tight">Welcome Back</h2>
+            <p class="text-blue-200 mt-2 text-sm">Sign in to your SecureBank account</p>
+        </div>
+        <!-- Alert Message -->
+        <div th:if="${msg}" class="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6 text-sm text-center font-medium shadow-sm backdrop-blur-sm">
+            <span th:text="${msg}"></span>
+        </div>
+                <div id="cameraSection" class="hidden mb-4 relative">
+                    <video id="video" autoplay muted class="w-full rounded-xl"></video>
+                    <div id="scanOverlay" class="absolute inset-0 border-4 border-blue-500/50 rounded-xl pointer-events-none"></div>
+                    <p id="faceStatus" class="mt-2 text-center text-sm text-white"></p>
+                </div>
+                <button id="startCameraBtn" type="button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl mb-3 transition">Start Camera</button>
+            </form>
+        </div>
+        <!-- OTP / Password Flow -->
+        <div id="otpForm" th:if="${session.otp == null}">
+            <form action="/send_Otp" method="post" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-blue-100 mb-1" for="email">Email Address</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-blue-300"></i>
+                        <input type="email" id="email" name="email" required placeholder="Enter your email"
+                               class="w-full bg-white/5 border border-white/10 text-white placeholder-blue-300/50 pl-11 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-blue-100 mb-1" for="password">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-blue-300"></i>
+                        <input type="password" id="password" name="password" required placeholder="Enter your password"
+                               class="w-full bg-white/5 border border-white/10 text-white placeholder-blue-300/50 pl-11 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition" />
+                    </div>
+                </div>
+                <button type="submit"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3.5 rounded-xl shadow-lg transition-all duration-300">
+                    Send OTP
+                </button>
+            </form>
+        </div>
+        <div th:if="${session.otp != null}">
+            <form action="/verify_Otp" method="post" class="space-y-5 mt-4">
+                <div class="bg-green-500/20 text-green-200 p-3 rounded-lg text-sm text-center border border-green-500/30 mb-4">
+                    OTP has been sent to your email.
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-blue-100 mb-1" for="otp">Enter OTP</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-blue-300"></i>
+                        <input type="text" id="otp" name="otp" required placeholder="------"
+                               class="w-full bg-white/5 border border-white/10 text-white placeholder-blue-300/50 pl-11 pr-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition tracking-widest text-center text-lg" />
+                    </div>
+                </div>
+                <button type="submit"
+                        class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-semibold py-3.5 rounded-xl shadow-lg transition-all duration-300">
+                    Verify &amp; Login
+                </button>
+            </form>
+        </div>
+        <div class="mt-8 text-center border-t border-white/10 pt-6">
+            <p class="text-sm text-blue-200">
+                New Customer? <a href="/Register_customer" class="text-white font-semibold hover:text-blue-300 transition-colors">Create Account</a>
+            </p>
+        </div>
+    </div>
+<script>
+    // Show OTP form by default (no face login)
+    const otpForm = document.getElementById('otpForm');
+    if (otpForm) {
+        otpForm.classList.remove('hidden');
+    }
+</script>
+</body>
+</html>

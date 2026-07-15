@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Secure Money Transfer</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 400px;
+            margin: 60px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #1e3a8a;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 5px rgba(79,70,229,0.4);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #3730a3;
+        }
+
+        .otp-btn {
+            background: #06b6d4;
+            margin-top: 5px;
+        }
+
+        .otp-btn:hover {
+            background: #0891b2;
+        }
+
+        .icon {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .msg {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: green;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="icon">💳</div>
+
+    <h2>Secure Transfer</h2>
+
+    <form action="/transfer" method="post">
+
+    <!-- Sender Dropdown -->
+    
+
+    <!-- Receiver Details -->
+   
+
+    <!-- Sender auto-filled -->
+    <input type="text" name="senderAcc"
+           th:value="${senderAcc}" readonly>
+
+    <input type="password" name="pin" placeholder="Enter PIN" required>
+
+    <input type="text" name="receiverAcc" placeholder="Receiver Account Number" required>
+
+    <input type="number" name="amount" placeholder="Amount" required>
+
+    <button type="submit">Transfer</button>
+
+</form>
+</form>
+<script>
+    
+function fetchBankDetails(){
+
+    let ifsc = document.getElementById("ifsc").value;
+
+    if(ifsc.length === 11){
+
+        fetch("https://ifsc.razorpay.com/" + ifsc)
+        .then(res => res.json())
+        .then(data => {
+
+            document.getElementById("bankName").value = data.BANK;
+            document.getElementById("branchName").value = data.BRANCH;
+
+        })
+        .catch(() => {
+            alert("Invalid IFSC Code");
+        });
+    }
+}
+</script>
+</script>
+
+
+
+<script th:if="${msg}">
+    alert('[[${msg}]]');
+</script>
+
+</body>
+</html>

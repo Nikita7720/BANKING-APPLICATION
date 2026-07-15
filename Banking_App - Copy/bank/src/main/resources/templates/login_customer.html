@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Login - SecureBank</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body class="bg-gradient-to-br from-blue-900 to-blue-950 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+
+    <!-- Header -->
+    <div class="bg-blue-700 text-white p-8 text-center">
+      <h1 class="text-3xl font-bold flex items-center justify-center gap-3">
+        <i class="fa-solid fa-user"></i> Customer Portal
+      </h1>
+      <p class="text-blue-200 mt-2">Secure Account Access</p>
+    </div>
+
+    <!-- Login Form -->
+    <div class="p-8">
+
+      <!-- Error / Success Messages -->
+      <div th:if="${msg}"
+        th:classappend="${#strings.contains(msg, 'Invalid')} ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'"
+        class="p-3 rounded mb-4 text-center font-semibold shadow-sm" th:text="${msg}"></div>
+
+      <!-- Step 1: Send OTP -->
+      <form th:if="${msg == null or (msg != 'OTP sent to email' and msg != 'Invalid OTP ❌')}" action="/send_Otp"
+        method="post" class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="email" name="email"
+              class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+              placeholder="Enter your email" required th:value="${email}">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="password" name="password"
+              class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+              placeholder="Enter password" required th:value="${password}">
+          </div>
+        </div>
+
+        <button type="submit"
+          class="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-4 rounded-lg transition duration-300 shadow-md">
+          Send OTP
+        </button>
+      </form>
+
+      <!-- Step 2: Verify OTP -->
+      <form th:if="${msg == 'OTP sent to email' or msg == 'Invalid OTP ❌'}" action="/verify_Otp" method="post"
+        class="space-y-6">
+
+        <!-- Timer Display -->
+        <div
+          class="text-center text-gray-600 font-bold mb-2 bg-blue-50 py-3 rounded-lg border border-blue-100 shadow-inner">
+          <i class="fa-regular fa-clock mr-2 text-blue-500"></i>Time remaining: <span id="timer"
+            class="text-blue-700 text-xl tracking-wider">02:00</span>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
+          <div class="relative">
+            <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            <input type="text" name="otp"
+              class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 tracking-widest text-center text-2xl font-bold"
+              placeholder="------" required autofocus autocomplete="off" maxlength="6">
+          </div>
+        </div>
+
+        <button type="submit" id="verifyBtn"
+          class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-lg transition duration-300 shadow-md">
+          Verify OTP & Login
+        </button>
+      </form>
+
+      <div class="mt-6 text-center text-sm space-y-3">
+        <p th:if="${msg == null or (msg != 'OTP sent to email' and msg != 'Invalid OTP ❌')}" class="text-gray-600">
+          New User? <a href="/Register_customer" class="text-blue-600 font-bold hover:underline">Register Here</a>
+        </p>
+        <a th:href="${msg == 'OTP sent to email' or msg == 'Invalid OTP ❌' ? '/login_customer' : '/'}"
+          class="text-blue-600 hover:underline block font-medium">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span
+            th:text="${msg == 'OTP sent to email' or msg == 'Invalid OTP ❌' ? 'Back to Login' : 'Back to Home'}"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const timerElement = document.getElementById('timer');
+      const verifyBtn = document.getElementById('verifyBtn');
+      
+      if (timerElement && verifyBtn) {
+        const TIMER_DURATION = 120; // 2 minutes
+        let endTime = sessionStorage.getItem('otpEndTime');
+        
+        // Let's use Thymeleaf to inject the message safely
+        // But since we can't rely on it parsing perfectly without errors, we just check if it's a new page load
+        // by looking at the timer text content initially.
+        let isNewOtp = false;
+        
+        // If there's no endTime in storage, it's a new OTP
+        if (!endTime) {
+            isNewOtp = true;
+        } else {
+            // Check if expired
+            let timeLeft = Math.floor((endTime - Date.now()) / 1000);
+            if (timeLeft <= -100000) { // arbitrary large negative means it's super old
+                 isNewOtp = true;
+            }
+        }
+        
+        // Actually, we know it's a new OTP if they just arrived here after "Send OTP"
+        // Let's check the referrer or just rely on sessionStorage.
+        // The safest way: if msg is strictly "OTP sent to email", we reset.
+        // We will just grab it from a hidden input or data attribute we can add.
+        // Since we can't change the HTML easily right now, let's just use the fact that
+        // the form renders the timer.
+        // Wait, what if they refresh the page? If they refresh, the timer continues.
+        // If they send a NEW OTP, sessionStorage should be reset.
+        // We can hook into the "Send OTP" button to clear the storage!
+      }
+    });
+
+    // Let's implement the timer properly
+    document.addEventListener("DOMContentLoaded", function() {
+        const timerElement = document.getElementById('timer');
+        const verifyBtn = document.getElementById('verifyBtn');
+        
+        // Hook into all Send OTP buttons to clear the timer state
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            if (form.getAttribute('action') === '/send_Otp') {
+                form.addEventListener('submit', () => {
+                    sessionStorage.removeItem('otpEndTime');
+                });
+            }
+        });
+
+        if (timerElement && verifyBtn) {
+            const TIMER_DURATION = 120; // 2 minutes in seconds
+            let endTime = sessionStorage.getItem('otpEndTime');
+            
+            if (!endTime) {
+                endTime = Date.now() + (TIMER_DURATION * 1000);
+                sessionStorage.setItem('otpEndTime', endTime);
+            }
+            
+            endTime = parseInt(endTime);
+            
+            updateTimer(); // Initial call
+            const timerId = setInterval(updateTimer, 1000);
+            
+            function updateTimer() {
+                let timeLeft = Math.floor((endTime - Date.now()) / 1000);
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    timerElement.textContent = "Expired";
+                    timerElement.classList.replace('text-blue-700', 'text-red-600');
+                    verifyBtn.disabled = true;
+                    verifyBtn.classList.replace('bg-green-600', 'bg-gray-400');
+                    verifyBtn.classList.replace('hover:bg-green-700', 'bg-gray-400');
+                    verifyBtn.style.cursor = 'not-allowed';
+                    sessionStorage.removeItem('otpEndTime');
+                } else {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    timerElement.textContent = 
+                        (minutes < 10 ? '0' : '') + minutes + ':' + 
+                        (seconds < 10 ? '0' : '') + seconds;
+                }
+            }
+        } else {
+            sessionStorage.removeItem('otpEndTime');
+        }
+    });
+  </script>
+</body>
+
+</html>

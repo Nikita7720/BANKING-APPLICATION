@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bank</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #2d50b1, #3b82f6);
+      min-height: 100vh;
+      color: white;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: #4f69c0;
+      padding: 18px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      font-size: 17px;
+    }
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .nav-links a:hover {
+      color: #bae6fd;
+    }
+
+    /* Main Content */
+    .main-content {
+      text-align: center;
+      margin-top: 100px;
+      padding: 20px;
+    }
+    .welcome {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    .tagline {
+      font-size: 20px;
+      margin-bottom: 50px;
+      opacity: 0.9;
+    }
+
+    button {
+      width: 100%;
+      max-width: 420px;
+      padding: 18px;
+      margin: 15px auto;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      display: block;
+      transition: 0.3s;
+    }
+    .create-btn {
+      background: #22d3ee;
+      color: #1e3a8a;
+    }
+    .login-btn {
+      background: white;
+      color: #1e40af;
+    }
+    button:hover {
+      transform: scale(1.04);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">
+      🏦 My Bank
+    </div>
+    
+    <div class="nav-links">
+      <a href="#">Home</a>
+      <a href="#">About Us</a>
+      <a href="#">Services</a>
+      <a href="#">Contact Us</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h1 class="welcome">Welcome, <span id="userName">Nikita</span> 👋</h1>
+    <p class="tagline">Choose an option to continue</p>
+
+    <!-- Buttons eka khali ek -->
+     <a href="/AccountOpening">
+    <button class="create-btn" onclick="createNewAccount()">
+      ➕ Create New Bank Account
+    </button></a>
+
+    <a href="/Existinglogin">
+    <button class="login-btn" onclick="loginExisting()">
+      🔑 Login to Existing Bank Account
+    </button>
+    </a>
+  </div>
+
+  
+
+</body>
+</html>

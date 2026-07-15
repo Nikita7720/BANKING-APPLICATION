@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Secure Money Transfer</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 400px;
+            margin: 60px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            text-align: center;
+            color: #1e3a8a;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 5px rgba(79,70,229,0.4);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #3730a3;
+        }
+
+        .otp-btn {
+            background: #06b6d4;
+            margin-top: 5px;
+        }
+
+        .otp-btn:hover {
+            background: #0891b2;
+        }
+
+        .icon {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .msg {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: green;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Add QR Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <div class="icon">💳</div>
+
+    <h2>Secure Transfer</h2>
+
+    <!-- QR Scanner UI -->
+    <div id="reader" style="width: 100%; display: none; margin-bottom: 20px; border-radius: 10px; overflow: hidden;"></div>
+    <button type="button" id="scanBtn" class="btn otp-btn" style="margin-bottom: 15px;">
+        Scan QR Code
+    </button>
+
+    <form action="/transfer" method="post">
+
+    <!-- Sender auto-filled -->
+    <p style="font-size: 10px; color: #666; margin: 0;">From Account</p>
+    <input type="text" name="senderAcc" th:value="${senderAcc}" readonly>
+
+    <p style="font-size: 10px; color: #666; margin: 0;">Your Security PIN</p>
+    <input type="password" name="pin" placeholder="Enter PIN" required>
+
+    <p style="font-size: 10px; color: #666; margin: 0;">To Account / UPI ID</p>
+    <input type="text" id="receiverAcc" name="receiverAcc" placeholder="Receiver Account or UPI ID" required>
+
+    <p style="font-size: 10px; color: #666; margin: 0;">Amount</p>
+    <input type="number" name="amount" placeholder="Amount to Transfer" required>
+
+    <button type="submit" class="btn">Transfer Now</button>
+
+</form>
+
+<script>
+    const scanBtn = document.getElementById('scanBtn');
+    const readerDiv = document.getElementById('reader');
+    const receiverInput = document.getElementById('receiverAcc');
+    let html5QrcodeScanner = null;
+
+    scanBtn.addEventListener('click', () => {
+        if (readerDiv.style.display === 'none') {
+            readerDiv.style.display = 'block';
+            scanBtn.innerText = 'Stop Scanning';
+            
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+            html5QrcodeScanner.render(onScanSuccess, onScanError);
+        } else {
+            stopScanner();
+        }
+    });
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Handle UPI URI format: upi://pay?pa=id@bank&pn=Name...
+        let finalId = decodedText;
+        if (decodedText.startsWith('upi://pay?')) {
+            const urlParams = new URLSearchParams(decodedText.split('?')[1]);
+            finalId = urlParams.get('pa'); // Extract payment address (UPI ID)
+        }
+        
+        receiverInput.value = finalId;
+        stopScanner();
+        alert("Scanned: " + finalId);
+    }
+
+    function onScanError(err) {
+        // Silent error to avoid spam
+    }
+
+    function stopScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+        }
+        readerDiv.style.display = 'none';
+        scanBtn.innerText = 'Scan QR Code';
+    }
+</script>
+
+<script>
+    
+function fetchBankDetails(){
+
+    let ifsc = document.getElementById("ifsc").value;
+
+    if(ifsc.length === 11){
+
+        fetch("https://ifsc.razorpay.com/" + ifsc)
+        .then(res => res.json())
+        .then(data => {
+
+            document.getElementById("bankName").value = data.BANK;
+            document.getElementById("branchName").value = data.BRANCH;
+
+        })
+        .catch(() => {
+            alert("Invalid IFSC Code");
+        });
+    }
+}
+</script>
+</script>
+
+
+
+<script th:if="${msg}">
+    alert('[[${msg}]]');
+</script>
+
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - My Bank</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(white);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .login-box {
+      background: white;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 10px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+      overflow: hidden;
+    }
+    .header {
+      background: #1e40af;
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+    .header h2 {
+      font-size: 26px;
+    }
+    .form-content {
+      padding: 30px 25px;
+    }
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+      color: #374151;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input:focus {
+      border-color: #3b82f6;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: #1e40af;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: bold;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #1e3a8a;
+    }
+    .link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .link a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <div class="header">
+      <h2>🏦 My Bank</h2>
+      <p>Login to your account</p>
+    </div>
+
+    <div class="form-content">
+      <div th:if="${msg}" class="bg-red-100 text-red-700 p-3 rounded mb-4 text-center font-bold" th:text="${msg}"></div>
+      
+      <form action="/Existinglogin" method="post">
+
+        <label>Account Number</label>
+        <input type="text" name="accountNumber" placeholder="Enter Account Number" required>
+
+        <label>IFSC Code</label>
+        <input type="text" name="ifscCode" placeholder="e.g. HDFC0000123" maxlength="11" style="text-transform: uppercase;" required>
+
+        <label>Branch (Optional)</label>
+        <input type="text" name="branch" placeholder="Branch Name">
+
+        <label>Password / PIN</label>
+        <input type="password" name="password" placeholder="Enter Password" required>
+
+        <button type="submit" class="btn">Login</button>
+      </form>
+
+      <div class="link">
+        <p>New Customer? <a href="/create-account">Create New Account</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Demo purpose sathi
+    //document.querySelector('form').addEventListener('submit', function(e) {
+      //const acc = document.querySelector('input[name="accountNumber"]').value;
+      //if (acc.length > 5) {
+        //alert("✅ Login Successful! Welcome Back Nikita 🎉");
+        // window.location.href = "/dashboard";
+      //}
+    //});
+  </script>
+
+</body>
+</html>

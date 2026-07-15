@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+    
+
+
+
+
+
+
+
+
+<body>
+
+<h2>Application Details</h2>
+
+
+<img th:src="@{'/photo/' + ${app.id}}"
+     style="width:80px;height:80px;border-radius:50%;">
+<br>
+<br>
+
+Name:
+<span th:text="${app.fullname}">
+</span>
+
+<br>
+
+Father Name:
+<span th:text="${app.father}">
+</span>
+
+<br>
+
+Email:
+<span th:text="${app.email}">
+</span>
+
+<br>
+
+PAN:
+<span th:text="${app.pan}">
+</span>
+
+<br><br>
+
+<a th:href=
+"@{/approve/{id}(id=${app.id})}">
+<button>
+Approve
+</button>
+</a>
+
+
+<a th:href=
+"@{/reject/{id}(id=${app.id})}">
+<button>
+Reject
+</button>
+</a>
+
+</body>
+</html>

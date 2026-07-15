@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<title>Staff Dashboard</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #eef2ff;
+  margin: 0;
+  padding: 30px;
+}
+
+.container {
+  width: 90%;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 15px gray;
+}
+
+h2 {
+  text-align: center;
+  color: darkblue;
+  margin-bottom: 30px;
+}
+
+.top-box {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 25px;
+  gap: 15px;
+}
+
+.card {
+  background: #dbeafe;
+  padding: 20px;
+  width: 30%;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+.card:hover {
+  background: #bfdbfe;
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  background: #1e3a8a;
+  color: white;
+  padding: 15px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+td {
+  padding: 14px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+  background: #f5f8ff;
+}
+
+.pending, .approved, .rejected {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.pending { background: #fff7ed; color: orange; }
+.approved { background: #dcfce7; color: green; }
+.rejected { background: #fee2e2; color: red; }
+
+.view-btn {
+  background: #2563eb;
+  color: white;
+  padding: 10px 18px;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+}
+.view-btn:hover {
+  background: #1d4ed8;
+}
+
+@media(max-width:768px){
+  .top-box {
+    flex-direction: column;
+  }
+  .card {
+    width: 100%;
+  }
+  table {
+    font-size: 14px;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>Staff Pending Applications</h2>
+
+
+<table>
+  <tr>
+    <th>Customer Name</th>
+    <th>Status</th>
+    <th>Application</th>
+  </tr>
+
+  <tr th:each="a:${apps}">
+    <td th:text="${a.fullname}"></td>
+    <td>
+      <span th:if="${a.status=='Pending'}" class="pending">Pending</span>
+      <span th:if="${a.status=='Approved'}" class="approved">Approved</span>
+      <span th:if="${a.status=='Rejected'}" class="rejected">Rejected</span>
+    </td>
+    <td>
+      <a class="view-btn" th:href="@{/view_form/{id}(id=${a.id})}">View Form</a>
+    </td>
+  </tr>
+</table>
+
+</div>
+</body>
+</html>

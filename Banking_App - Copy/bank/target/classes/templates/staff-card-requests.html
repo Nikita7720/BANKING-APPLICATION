@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Requests - Staff | SecureBank</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>* { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen pb-20">
+
+  <div class="bg-slate-800 text-white pb-20 pt-10 px-4 shadow-lg rounded-b-[3rem]">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div>
+        <a href="/staff-dashboard" class="text-slate-400 hover:text-white transition flex items-center gap-2 mb-2">
+          <i class="fa-solid fa-arrow-left"></i> Staff Dashboard
+        </a>
+        <h1 class="text-3xl font-extrabold tracking-tight">Card Issuance Panel</h1>
+        <p class="text-slate-400 mt-1">Review and approve Debit/Credit card applications</p>
+      </div>
+      <div class="bg-white/10 p-4 rounded-3xl backdrop-blur-md border border-white/10">
+        <i class="fa-solid fa-credit-card text-5xl text-yellow-500"></i>
+      </div>
+    </div>
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 -mt-10">
+    
+    <div th:if="${success}" class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-2xl mb-6 flex items-center gap-2 shadow-md">
+      <i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span>
+    </div>
+
+    <!-- Pending Requests -->
+    <div class="mb-12">
+      <h2 class="text-xl font-bold text-gray-700 mb-6 flex items-center gap-2 px-2">
+        <span class="w-2 h-6 bg-yellow-500 rounded-full"></span>
+        Pending Card Applications
+      </h2>
+      
+      <div th:if="${pending == null or pending.isEmpty()}" class="bg-white rounded-[2rem] p-16 text-center shadow-xl border border-gray-100">
+        <i class="fa-solid fa-folder-open text-gray-100 text-6xl mb-4"></i>
+        <p class="text-gray-400 font-bold">No pending card applications found</p>
+      </div>
+
+      <div th:if="${pending != null and !pending.isEmpty()}" class="grid gap-6">
+        <div th:each="r : ${pending}" class="bg-white rounded-3xl p-6 shadow-xl border border-gray-100 flex flex-col md:flex-row justify-between gap-8 hover:shadow-2xl transition duration-300">
+          <div class="flex-1 flex items-start gap-6">
+            <div th:class="${r.cardType == 'DEBIT' ? 'w-16 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xl shadow-md' : 'w-16 h-10 bg-slate-800 rounded-lg flex items-center justify-center text-white text-xl shadow-md border border-slate-700'}">
+              <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <h3 class="text-xl font-bold text-gray-800" th:text="${r.customerName}">-</h3>
+                <span th:class="${r.cardType == 'CREDIT' ? 'text-[10px] bg-slate-800 text-white px-2 py-0.5 rounded-full font-bold' : 'text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold'}" th:text="${r.cardType}">-</span>
+              </div>
+              <p class="text-sm text-gray-500 mb-2">Account: <span class="font-mono font-bold text-indigo-600" th:text="${r.accountNumber}">-</span></p>
+              <p class="text-xs text-gray-400" th:text="'Requested on: ' + ${#temporals.format(r.createdAt, 'dd MMM yyyy, hh:mm a')}"></p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 md:border-l border-gray-100 md:pl-8">
+            <form th:action="@{'/staff/approve-card/' + ${r.id}}" method="post">
+              <button type="submit" class="bg-emerald-600 text-white font-bold py-3 px-8 rounded-2xl shadow-lg hover:bg-emerald-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-check"></i> Approve & Issue
+              </button>
+            </form>
+            <form th:action="@{'/staff/reject-card/' + ${r.id}}" method="post">
+              <button type="submit" class="bg-red-50 text-red-600 font-bold py-3 px-6 rounded-2xl hover:bg-red-100 transition border border-red-100">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Section -->
+    <div th:if="${history != null and !history.isEmpty()}">
+      <h2 class="text-xl font-bold text-gray-700 mb-6 flex items-center gap-2 px-2">
+        <span class="w-2 h-6 bg-slate-400 rounded-full"></span>
+        Application History
+      </h2>
+      <div class="bg-white rounded-[2rem] shadow-xl border border-gray-100 overflow-hidden">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <th class="px-8 py-5">Customer</th>
+              <th class="px-6 py-5">Card Type</th>
+              <th class="px-6 py-5">Status</th>
+              <th class="px-6 py-5">Card Issued</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr th:each="h : ${history}" class="hover:bg-gray-50/50 transition">
+              <td class="px-8 py-5">
+                <p class="font-bold text-gray-800" th:text="${h.customerName}">-</p>
+                <p class="text-[10px] text-gray-400 font-mono" th:text="${h.accountNumber}">-</p>
+              </td>
+              <td class="px-6 py-5">
+                <span th:class="${h.cardType == 'CREDIT' ? 'text-slate-800 font-bold text-sm' : 'text-indigo-600 font-bold text-sm'}" th:text="${h.cardType}">-</span>
+              </td>
+              <td class="px-6 py-5">
+                <span th:if="${h.status == 'APPROVED'}" class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Issued</span>
+                <span th:if="${h.status == 'REJECTED'}" class="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Rejected</span>
+              </td>
+              <td class="px-6 py-5">
+                <p class="font-mono text-xs text-gray-700 font-bold" th:text="${h.cardNumber != null ? h.cardNumber : 'N/A'}">-</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

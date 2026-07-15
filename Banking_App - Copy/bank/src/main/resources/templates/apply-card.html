@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply for Debit/Credit Card | SecureBank</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .card-shadow { box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+    .debit-gradient { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+    .credit-gradient { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen pb-20">
+
+  <div class="bg-indigo-700 text-white pb-24 pt-10 px-4">
+    <div class="max-w-4xl mx-auto">
+      <a th:href="@{'/customer-dashboard/' + ${acc != null ? acc.id : ''}}" class="text-indigo-200 hover:text-white transition flex items-center gap-2 mb-4">
+        <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+      </a>
+      <h1 class="text-4xl font-extrabold tracking-tight">Card Services</h1>
+      <p class="text-indigo-100 mt-2">Apply for a new Debit or Credit card instantly</p>
+    </div>
+  </div>
+
+  <main class="max-w-4xl mx-auto px-4 -mt-12">
+    
+    <div th:if="${success}" class="bg-green-100 border border-green-200 text-green-700 px-4 py-3 rounded-2xl mb-6 flex items-center gap-2 shadow-sm">
+      <i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Debit Card Option -->
+      <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-gray-100 flex flex-col items-center text-center">
+        <div class="w-full h-48 rounded-3xl debit-gradient mb-6 relative overflow-hidden p-6 text-white flex flex-col justify-between shadow-lg">
+          <div class="flex justify-between items-start">
+            <i class="fa-solid fa-microchip text-4xl text-yellow-400"></i>
+            <span class="font-bold tracking-widest italic opacity-50">SecureBank</span>
+          </div>
+          <div class="text-left">
+            <p class="text-[10px] opacity-70 uppercase">Debit Card</p>
+            <p class="font-mono text-lg tracking-widest">XXXX XXXX XXXX XXXX</p>
+          </div>
+          <div class="flex justify-between items-end">
+            <p class="text-xs font-bold uppercase tracking-widest" th:text="${acc != null ? acc.fullname : 'YOUR NAME'}">YOUR NAME</p>
+            <i class="fa-brands fa-cc-visa text-3xl"></i>
+          </div>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800">Classic Debit Card</h3>
+        <p class="text-gray-500 mt-2 text-sm px-4">Instant cash withdrawals and online payments across the globe.</p>
+        <form action="/submit-card-request" method="post" class="w-full mt-6">
+          <input type="hidden" name="cardType" value="DEBIT">
+          <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition transform hover:-translate-y-1 shadow-lg">
+            Apply Now
+          </button>
+        </form>
+      </div>
+
+      <!-- Credit Card Option -->
+      <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-gray-100 flex flex-col items-center text-center">
+        <div class="w-full h-48 rounded-3xl credit-gradient mb-6 relative overflow-hidden p-6 text-white flex flex-col justify-between shadow-lg border border-white/10">
+          <div class="flex justify-between items-start">
+            <i class="fa-solid fa-microchip text-4xl text-yellow-200"></i>
+            <span class="font-bold tracking-widest italic opacity-50 text-indigo-400">SIGNATURE</span>
+          </div>
+          <div class="text-left">
+            <p class="text-[10px] opacity-70 uppercase">Credit Card</p>
+            <p class="font-mono text-lg tracking-widest">XXXX XXXX XXXX XXXX</p>
+          </div>
+          <div class="flex justify-between items-end">
+            <p class="text-xs font-bold uppercase tracking-widest" th:text="${acc != null ? acc.fullname : 'YOUR NAME'}">YOUR NAME</p>
+            <i class="fa-brands fa-cc-mastercard text-3xl text-orange-400"></i>
+          </div>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800">Premium Credit Card</h3>
+        <p class="text-gray-500 mt-2 text-sm px-4">Exclusive rewards, airport lounge access, and higher credit limits.</p>
+        <form action="/submit-card-request" method="post" class="w-full mt-6">
+          <input type="hidden" name="cardType" value="CREDIT">
+          <button type="submit" class="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl hover:bg-slate-900 transition transform hover:-translate-y-1 shadow-lg">
+            Apply Now
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <!-- Application Status Table -->
+    <div class="mt-12">
+      <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+        <span class="w-2 h-6 bg-indigo-600 rounded-full"></span>
+        Application History
+      </h3>
+      <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              <th class="px-6 py-4">Card Type</th>
+              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4">Action / Details</th>
+              <th class="px-6 py-4">Applied Date</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr th:each="r : ${myRequests}" class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4">
+                <span th:class="${r.cardType == 'CREDIT' ? 'text-slate-800 font-bold' : 'text-indigo-600 font-bold'}" th:text="${r.cardType}">-</span>
+              </td>
+              <td class="px-6 py-4">
+                <span th:if="${r.status == 'PENDING'}" class="bg-yellow-100 text-yellow-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Pending</span>
+                <span th:if="${r.status == 'APPROVED'}" class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Approved</span>
+                <span th:if="${r.status == 'REJECTED'}" class="bg-red-100 text-red-700 text-[10px] px-2 py-0.5 rounded-full font-bold">Rejected</span>
+              </td>
+              <td class="px-6 py-4">
+                <div th:if="${r.status == 'APPROVED'}" class="flex flex-col gap-2">
+                  <button th:data-id="${r.id}"
+                          th:data-type="${r.cardType}"
+                          th:data-number="${r.cardNumber}"
+                          th:data-expiry="${r.expiryDate}"
+                          th:data-cvv="${r.cvv}"
+                          onclick="showCard(this)" 
+                          class="bg-indigo-50 text-indigo-600 text-xs font-bold py-2 px-4 rounded-xl hover:bg-indigo-100 transition flex items-center gap-2 w-fit">
+                    <i class="fa-solid fa-eye"></i> View & Download Card
+                  </button>
+                </div>
+                <span th:if="${r.status != 'APPROVED'}" class="text-xs text-gray-300 italic">Not available</span>
+              </td>
+              <td class="px-6 py-4 text-xs text-gray-500" th:text="${#temporals.format(r.createdAt, 'dd MMM yyyy')}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Virtual Card Modal -->
+    <div id="cardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-[3rem] p-8 max-w-lg w-full shadow-2xl relative">
+        <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-400 hover:text-gray-600 text-2xl"><i class="fa-solid fa-circle-xmark"></i></button>
+        
+        <h3 class="text-2xl font-bold text-gray-800 mb-8 text-center">Your Virtual Card</h3>
+        
+        <!-- The Card to Download -->
+        <div id="captureArea" class="relative">
+          <div id="virtualCard" class="w-full h-64 rounded-3xl p-8 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden transition-all duration-500 transform hover:rotate-1">
+            <!-- Background Elements -->
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+            <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-black/10 rounded-full blur-3xl"></div>
+            
+            <div class="flex justify-between items-start z-10">
+              <div>
+                <p id="mCardType" class="text-[10px] font-bold uppercase tracking-widest opacity-80 mb-1">DEBIT CARD</p>
+                <i class="fa-solid fa-microchip text-4xl text-yellow-400 drop-shadow-md"></i>
+              </div>
+              <div class="text-right">
+                <h4 class="font-black italic text-xl tracking-tighter">SecureBank</h4>
+                <p class="text-[8px] tracking-[0.2em] opacity-60">PREMIUM BANKING</p>
+              </div>
+            </div>
+
+            <div class="z-10">
+              <p id="mCardNumber" class="font-mono text-2xl tracking-[0.2em] mb-4 drop-shadow-lg">4000 1234 5678 9012</p>
+              <div class="flex gap-8">
+                <div>
+                  <p class="text-[8px] opacity-60 uppercase mb-0.5">Expiry Date</p>
+                  <p id="mExpiry" class="font-mono text-sm font-bold tracking-widest">12/30</p>
+                </div>
+                <div>
+                  <p class="text-[8px] opacity-60 uppercase mb-0.5">CVV</p>
+                  <p id="mCvv" class="font-mono text-sm font-bold tracking-widest">***</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-end z-10">
+              <p id="mName" class="font-bold uppercase tracking-widest text-sm" th:text="${acc.fullname}">CUSTOMER NAME</p>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" class="h-6 object-contain" id="cardLogo">
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 grid grid-cols-2 gap-4">
+          <button onclick="downloadCard()" class="bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-lg">
+            <i class="fa-solid fa-download"></i> Download Image
+          </button>
+          <button onclick="closeModal()" class="bg-gray-100 text-gray-600 font-bold py-4 rounded-2xl hover:bg-gray-200 transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+  <script>
+    function showCard(el) {
+      const id = el.dataset.id;
+      const type = el.dataset.type;
+      const number = el.dataset.number;
+      const expiry = el.dataset.expiry;
+      const cvv = el.dataset.cvv;
+
+      const card = document.getElementById('virtualCard');
+      const typeLabel = document.getElementById('mCardType');
+      const numLabel = document.getElementById('mCardNumber');
+      const expLabel = document.getElementById('mExpiry');
+      const cvvLabel = document.getElementById('mCvv');
+      const logo = document.getElementById('cardLogo');
+
+      typeLabel.innerText = type + ' CARD';
+      numLabel.innerText = number;
+      expLabel.innerText = expiry;
+      cvvLabel.innerText = cvv;
+
+      if(type === 'CREDIT') {
+        card.className = 'w-full h-64 rounded-3xl p-8 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden bg-slate-900 border border-slate-700';
+        logo.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png";
+      } else {
+        card.className = 'w-full h-64 rounded-3xl p-8 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden bg-indigo-600';
+        logo.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png";
+      }
+
+      document.getElementById('cardModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('cardModal').classList.add('hidden');
+    }
+
+    function downloadCard() {
+      const area = document.getElementById('captureArea');
+      html2canvas(area, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'SecureBank_Virtual_Card.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+  </script>
+  </main>
+</body>
+</html>

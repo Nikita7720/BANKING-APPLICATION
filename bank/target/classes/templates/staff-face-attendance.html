@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Attendance - Staff Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .scan-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            border-radius: 50%;
+            overflow: hidden;
+            aspect-ratio: 1/1;
+            border: 4px solid #4f46e5;
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* Mirror mode */
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+            animation: scan 2s linear infinite;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        .face-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 80%;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="glass w-full max-w-lg rounded-3xl p-8 shadow-2xl relative text-center">
+        <!-- Back Button -->
+        <a href="/staff-dashboard" class="absolute top-6 left-6 text-gray-500 hover:text-indigo-600 transition">
+            <i class="fa-solid fa-arrow-left text-xl"></i>
+        </a>
+
+        <div class="mb-6">
+            <h2 class="text-3xl font-extrabold text-gray-800 tracking-tight">Facial <span class="text-indigo-600"
+                    th:text="${isCheckOut} ? 'Check-Out' : 'Check-In'">Attendance</span></h2>
+            <p class="text-gray-500 mt-2 text-sm"
+                th:text="${isCheckOut} ? 'Please align your face to securely check out.' : 'Please align your face within the frame to securely mark your attendance.'">
+            </p>
+        </div>
+
+        <!-- Camera Area -->
+        <div class="scan-container bg-black relative mb-8">
+            <video id="videoElement" autoplay playsinline></video>
+            <div class="face-guide"></div>
+            <div class="scan-line" id="scanLine"></div>
+            <!-- Overlay when camera is off/loading -->
+            <div id="cameraStatus"
+                class="absolute inset-0 flex flex-col items-center justify-center text-white bg-gray-900 z-10">
+                <i class="fa-solid fa-camera animate-pulse text-4xl mb-2 text-indigo-400"></i>
+                <span class="text-sm tracking-widest uppercase">Initializing Camera...</span>
+            </div>
+        </div>
+
+        <canvas id="canvasElement" class="hidden"></canvas>
+
+        <!-- Form to Submit Data -->
+        <form id="attendanceForm" th:action="${isCheckOut} ? '/staff/mark-checkout' : '/staff/mark-attendance'"
+            method="POST">
+            <input type="hidden" name="faceData" id="faceData">
+            <input type="hidden" name="location" id="locationInput">
+            <input type="hidden" name="latitude" id="latitudeInput">
+            <input type="hidden" name="longitude" id="longitudeInput">
+            <input type="hidden" name="branchLat" id="branchLatInput" value="19.949749">
+            <input type="hidden" name="branchLon" id="branchLonInput" value="73.839256">
+            <p id="distanceInfo" class="text-sm text-gray-600 mt-2 hidden"></p>
+            class="w-full bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 px-8
+            rounded-full shadow-lg transform transition hover:scale-105 flex items-center justify-center gap-3 text-lg
+            hidden"
+            th:classappend="${isCheckOut} ? 'from-orange-500 to-red-500' : 'from-indigo-600 to-purple-600'">
+            <i class="fa-solid fa-expand"></i> <span
+                th:text="${isCheckOut} ? 'Verify Identity to Check Out' : 'Verify Identity to Check In'">Verify
+                Identity</span>
+            </button>
+
+            <button type="submit" id="submitBtn" class="hidden"></button>
+        </form>
+
+        <div id="successMsg" class="hidden mt-6 bg-green-50 text-green-700 p-4 rounded-xl border border-green-200">
+            <i class="fa-solid fa-circle-check text-2xl mb-2"></i>
+            <p class="font-bold">Identity Verified!</p>
+            <p class="text-sm" th:text="${isCheckOut} ? 'Checking out...' : 'Marking attendance...'"></p>
+        </div>
+
+        <div id="errorMsg" class="hidden mt-6 bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
+            <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
+            <p class="font-bold">Camera Access Required</p>
+            <p class="text-sm">Please allow camera permissions to use facial attendance.</p>
+        </div>
+    </div>
+
+    <script>
+        // Haversine distance function for client‑side debugging
+        function haversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371.01; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // km
+        }
+        const canvas = document.getElementById('canvasElement');
+        const faceDataInput = document.getElementById('faceData');
+        const scanBtn = document.getElementById('scanBtn');
+        const scanLine = document.getElementById('scanLine');
+        const cameraStatus = document.getElementById('cameraStatus');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const attendanceForm = document.getElementById('attendanceForm');
+
+        // Access webcam
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+
+                video.onloadedmetadata = () => {
+                    cameraStatus.classList.add('hidden');
+                    scanBtn.classList.remove('hidden');
+                };
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                cameraStatus.classList.add('hidden');
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        initCamera();
+
+        // Handle Scan Button
+        scanBtn.addEventListener('click', () => {
+            // Start scanning animation
+            scanLine.style.display = 'block';
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+            // Simulate processing delay for ML scanning
+            setTimeout(() => {
+                // Capture image frame
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+
+                // Convert to base64
+                const imgData = canvas.toDataURL('image/jpeg');
+                faceDataInput.value = imgData;
+                // Capture GPS location and store in hidden fields
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(pos => {
+                        const lat = pos.coords.latitude.toFixed(6);
+                        const lon = pos.coords.longitude.toFixed(6);
+                        // duplicate declarations removed
+                        // duplicate lon declaration removed
+                        document.getElementById('latitudeInput').value = lat;
+                        document.getElementById('longitudeInput').value = lon;
+                        document.getElementById('locationInput').value = `${lat},${lon}`;
+                        // Compute distance for debugging
+                        const branchLat = parseFloat(document.getElementById('branchLatInput').value);
+                        const branchLon = parseFloat(document.getElementById('branchLonInput').value);
+                        const distanceKm = haversineDistance(lat, lon, branchLat, branchLon);
+                        const distanceM = Math.round(distanceKm * 1000);
+                        const infoEl = document.getElementById('distanceInfo');
+                        infoEl.textContent = `Distance to branch: ${distanceM} meters`;
+                        infoEl.classList.remove('hidden');
+                    }, err => {
+                        console.warn('Location error:', err);
+                        document.getElementById('locationInput').value = '';
+                        document.getElementById('latitudeInput').value = '';
+                        document.getElementById('longitudeInput').value = '';
+                    });
+                } else {
+                    console.warn('Geolocation not supported');
+                }
+
+                // Stop video stream
+                const stream = video.srcObject;
+                if (stream) {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                }
+
+                // Show success and submit
+                scanLine.style.display = 'none';
+                scanBtn.classList.add('hidden');
+                successMsg.classList.remove('hidden');
+
+                // Submit form after small delay for UX
+                setTimeout(() => {
+                    attendanceForm.submit();
+                }, 1500);
+
+            }, 2500); // 2.5s scanning effect
+        });
+    </script>
+</body>
+
+</html>

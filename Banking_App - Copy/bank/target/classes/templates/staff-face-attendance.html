@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Attendance - Staff Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .scan-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            border-radius: 50%;
+            overflow: hidden;
+            aspect-ratio: 1/1;
+            border: 4px solid #4f46e5;
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* Mirror mode */
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+            animation: scan 2s linear infinite;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        .face-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 80%;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="glass w-full max-w-lg rounded-3xl p-8 shadow-2xl relative text-center">
+        <!-- Back Button -->
+        <a href="/staff-dashboard" class="absolute top-6 left-6 text-gray-500 hover:text-indigo-600 transition">
+            <i class="fa-solid fa-arrow-left text-xl"></i>
+        </a>
+
+        <div class="mb-6">
+            <h2 class="text-3xl font-extrabold text-gray-800 tracking-tight">Facial <span class="text-indigo-600"
+                    th:text="${isCheckOut} ? 'Check-Out' : 'Check-In'">Attendance</span></h2>
+            <p class="text-gray-500 mt-2 text-sm"
+                th:text="${isCheckOut} ? 'Please align your face to securely check out.' : 'Please align your face within the frame to securely mark your attendance.'">
+            </p>
+        </div>
+
+        <!-- Camera Area -->
+        <div class="scan-container bg-black relative mb-8">
+            <video id="videoElement" autoplay playsinline></video>
+            <div class="face-guide"></div>
+            <div class="scan-line" id="scanLine"></div>
+            <!-- Overlay when camera is off/loading -->
+            <div id="cameraStatus"
+                class="absolute inset-0 flex flex-col items-center justify-center text-white bg-gray-900 z-10">
+                <i class="fa-solid fa-camera animate-pulse text-4xl mb-2 text-indigo-400"></i>
+                <span class="text-sm tracking-widest uppercase">Initializing Camera...</span>
+            </div>
+        </div>
+
+        <canvas id="canvasElement" class="hidden"></canvas>
+
+        <!-- Form to Submit Data -->
+        <form id="attendanceForm" th:action="${isCheckOut} ? '/staff/mark-checkout' : '/staff/mark-attendance'"
+            method="POST">
+            <input type="hidden" name="faceData" id="faceData">
+            <input type="hidden" id="registeredFaceDataInput" th:value="${registeredFace}">
+            <input type="hidden" name="latitude" id="latInput">
+            <input type="hidden" name="longitude" id="lonInput">
+
+            <div id="locationStatus"
+                class="mb-6 p-4 rounded-2xl text-sm font-bold flex flex-col items-center justify-center gap-1 bg-gray-100 text-gray-500">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-location-dot animate-bounce"></i>
+                    <span id="locText">Fetching Live Location...</span>
+                </div>
+                <p id="currentCoords" class="text-[10px] opacity-60 mt-1 font-mono"></p>
+            </div>
+
+            <button type="button" id="scanBtn"
+                class="w-full bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-4 px-8 rounded-full shadow-lg transform transition hover:scale-105 flex items-center justify-center gap-3 text-lg opacity-50 cursor-not-allowed"
+                disabled
+                th:classappend="${isCheckOut} ? 'from-orange-500 to-red-500' : 'from-indigo-600 to-purple-600'">
+                <i class="fa-solid fa-expand"></i> <span
+                    th:text="${isCheckOut} ? 'Verify Identity to Check Out' : 'Verify Identity to Check In'">Verify
+                    Identity</span>
+            </button>
+
+            <button type="submit" id="submitBtn" class="hidden"></button>
+        </form>
+
+        <div id="successMsg" class="hidden mt-6 bg-green-50 text-green-700 p-4 rounded-xl border border-green-200">
+            <i class="fa-solid fa-circle-check text-2xl mb-2"></i>
+            <p class="font-bold">Identity Verified!</p>
+            <p class="text-sm" th:text="${isCheckOut} ? 'Checking out...' : 'Marking attendance...'"></p>
+        </div>
+
+        <div id="errorMsg" class="hidden mt-6 bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
+            <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i>
+            <p class="font-bold">Camera Access Required</p>
+            <p class="text-sm">Please allow camera permissions to use facial attendance.</p>
+        </div>
+    </div>
+
+    <!-- Face API JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+
+    <script>
+        const registeredFaceData = document.getElementById('registeredFaceDataInput').value;
+        
+        const video = document.getElementById('videoElement');
+        const canvas = document.getElementById('canvasElement');
+        const faceDataInput = document.getElementById('faceData');
+        const scanBtn = document.getElementById('scanBtn');
+        const scanLine = document.getElementById('scanLine');
+        const cameraStatus = document.getElementById('cameraStatus');
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const attendanceForm = document.getElementById('attendanceForm');
+
+        const latInput = document.getElementById('latInput');
+        const lonInput = document.getElementById('lonInput');
+        const locText = document.getElementById('locText');
+        const locationStatus = document.getElementById('locationStatus');
+
+        let modelsLoaded = false;
+
+        // Load models from CDN
+        async function loadModels() {
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            modelsLoaded = true;
+            console.log("Face Models Loaded");
+        }
+
+        // Geolocation
+        function initLocation() {
+            if (navigator.geolocation) {
+                // Bank Coordinates (Must match backend)
+                const bankLat = 18.651900; 
+                const bankLon = 73.797100;
+                const maxDistance = 50000; // meters
+
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const uLat = position.coords.latitude;
+                    const uLon = position.coords.longitude;
+                    
+                    latInput.value = uLat;
+                    lonInput.value = uLon;
+                    
+                    // Display current coords for the user
+                    document.getElementById('currentCoords').innerText = "Your Location: " + uLat.toFixed(6) + ", " + uLon.toFixed(6);
+
+                    // Calculate distance in Frontend too
+                    const dist = calculateJSPerformanceDistance(uLat, uLon, bankLat, bankLon);
+                    
+                    if (dist <= maxDistance) {
+                        locationStatus.classList.remove('bg-gray-100', 'text-gray-500', 'bg-red-100', 'text-red-700');
+                        locationStatus.classList.add('bg-green-100', 'text-green-700');
+                        locText.innerText = "Location Verified (Secure Workspace)";
+                        
+                        // Only enable if models are also ready
+                        checkReadyState();
+                    } else {
+                        locationStatus.classList.remove('bg-gray-100', 'text-gray-500', 'bg-green-100', 'text-green-700');
+                        locationStatus.classList.add('bg-red-100', 'text-red-700');
+                        locText.innerText = "Out of Workspace (" + Math.round(dist) + "m away). Go to Bank Branch.";
+                    }
+                }, (err) => {
+                    console.error(err);
+                    locText.innerText = "Location Access Denied! Cannot Proceed.";
+                    locationStatus.classList.add('bg-red-100', 'text-red-700');
+                });
+            } else {
+                locText.innerText = "Geolocation not supported.";
+            }
+        }
+
+        function checkReadyState() {
+            if (modelsLoaded) {
+                scanBtn.disabled = false;
+                scanBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                setTimeout(checkReadyState, 1000);
+            }
+        }
+
+        // Helper function for JS distance
+        function calculateJSPerformanceDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371000; // meters
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Access webcam
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    cameraStatus.classList.add('hidden');
+                    loadModels().then(initLocation);
+                };
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                cameraStatus.classList.add('hidden');
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        initCamera();
+
+        // Handle Scan Button
+        scanBtn.addEventListener('click', async () => {
+            if (!registeredFaceData) {
+                alert("Reference face data missing!");
+                return;
+            }
+
+            scanLine.style.display = 'block';
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Matching Face...';
+            
+            // Detect and recognize
+            const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptor();
+
+            if (!detection) {
+                alert("Face not detected! Please look at the camera.");
+                resetScanBtn();
+                return;
+            }
+
+            // Compare with registered face
+            const registeredDescriptor = new Float32Array(JSON.parse(registeredFaceData));
+            const distance = faceapi.euclideanDistance(detection.descriptor, registeredDescriptor);
+            
+            console.log("Face Distance:", distance);
+
+            // Distance threshold (lower is better match, usually 0.6 is good)
+            if (distance < 0.5) {
+                // Match Success
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                faceDataInput.value = canvas.toDataURL('image/jpeg');
+
+                const stream = video.srcObject;
+                if(stream) stream.getTracks().forEach(track => track.stop());
+
+                scanLine.style.display = 'none';
+                scanBtn.classList.add('hidden');
+                successMsg.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    attendanceForm.submit();
+                }, 1500);
+            } else {
+                // Match Failed
+                alert("Face Mismatch! Access Denied. Only the registered staff member can mark attendance.");
+                resetScanBtn();
+            }
+        });
+
+        function resetScanBtn() {
+            scanLine.style.display = 'none';
+            scanBtn.disabled = false;
+            scanBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Verify Identity';
+        }
+    </script>
+</body>
+
+</html>
